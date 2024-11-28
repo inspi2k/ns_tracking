@@ -89,12 +89,14 @@ def get_naver_shopping_results_with_retry(query, max_retries=3, delay_between_re
     
     return None
 
-def parse_shopping_results(json_response, page_size=50) -> List[Dict]:
+def parse_shopping_results(json_response, page_size=50, keyword=None) -> List[Dict]:
     """
     네이버 쇼핑 검색 결과를 파싱하여 필요한 정보만 추출
     
     Args:
         json_response: API 응답 JSON
+        page_size: 페이지당 결과 수
+        keyword: 검색 키워드
         
     Returns:
         List[Dict]: 파싱된 상품 정보 리스트
@@ -109,6 +111,7 @@ def parse_shopping_results(json_response, page_size=50) -> List[Dict]:
             rank += 1
             
         parsed_item = {
+            'keyword': keyword,  # 검색 키워드 추가
             'no': idx + page_size * (product['page'] - 1),
             'rank': rank if 'cardType' not in product else product['cardType'],
             'nvMid': product['nvMid'],
@@ -186,7 +189,7 @@ def update_rank_sheet_batch(sheet_url: str, rank_data: list, sheet_client=None, 
     # 한 번에 업데이트
     if update_rows:
         cell_range = f'A{next_row}:I{next_row + len(update_rows) - 1}'
-        worksheet.update(cell_range, update_rows)
+        worksheet.update(values=update_rows, range_name=cell_range)
         print(f"총 {len(update_rows)}개의 순위 정보가 {sheet_name} 시트에 저장되었습니다.", flush=True)
 
 # 메인 실행 코드 수정
@@ -203,6 +206,9 @@ if __name__ == "__main__":
     sheet_url = "https://docs.google.com/spreadsheets/d/1MBGehwzeYamNfnXaNJv4IQGavmd9UDtUpviivCpyOHg"
     sheet_name = "keywords"
     
+    start_time = time.strftime("%Y-%m-%d %H:%M:%S")
+    print(f"작업 시작 시간: {start_time}")
+    
     tracking_items = get_sheet_data(
         sheet_url=sheet_url,
         sheet_name=sheet_name,
@@ -217,7 +223,7 @@ if __name__ == "__main__":
         results = get_naver_shopping_results(item['keyword'], item['mid'], max_pages=10)
         
         if results and results['data']:
-            products = parse_shopping_results(results)
+            products = parse_shopping_results(results, keyword=item['keyword'])
             all_results.extend(products)
             
             # 해당 mid의 순위 찾기
@@ -250,3 +256,7 @@ if __name__ == "__main__":
         filename = f'naver_shopping_results_{timestamp}.csv'
         df.to_csv(filename, index=False, encoding='utf-8-sig')
         print(f"\nCSV 파일로 저장되었습니다: {filename}")
+    
+    end_time = time.strftime("%Y-%m-%d %H:%M:%S")
+    print(f"\n작업 시작 시간: {start_time}")
+    print(f"작업 종료 시간: {end_time}")
