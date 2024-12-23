@@ -8,6 +8,9 @@ python-*.json
 secret.json
 config.json
 
+/results
+/project-venv
+
 # Created by https://www.toptal.com/developers/gitignore/api/macos
 # Edit at https://www.toptal.com/developers/gitignore?templates=macos
 
