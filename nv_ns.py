@@ -177,7 +177,7 @@ def update_rank_sheet_batch(sheet_url: str, rank_data: List[Dict], sheet_client:
         worksheet = workbook.add_worksheet(sheet_name, 1000, 5)
         # 헤더 추가
         # worksheet.update('A1:E1', [['Timestamp', 'MID', 'Keyword', 'Rank', 'Date']])
-        worksheet.update('A1:I1', [['Date', 'Time', 'MID', 'Keyword', 'Store', 'Item', 'Rank', 'Channel', 'Title']])
+        worksheet.update('A1:K1', [['Date', 'Time', 'MID', 'Keyword', 'Store', 'Item', 'Rank', 'Channel', 'Name_Prd', 'Amt_Search', 'Amt_Prds']])
     
     # 현재 시간과 날짜
     date = time.strftime("%y. %m. %d")
