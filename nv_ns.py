@@ -8,6 +8,7 @@ from google.oauth2.service_account import Credentials
 import json
 import pandas as pd
 import callGetKey as getKey
+import os
 
 def get_naver_shopping_results(query: str, mid: int, max_pages: int = 1, cursor: int = 1, page_size: int = 50) -> dict:
     base_url = 'https://search.shopping.naver.com/ns/v1/search/paged-composite-cards'
@@ -285,10 +286,14 @@ if __name__ == "__main__":
         )
     
     if all_results:
+        # results 폴더가 없으면 생성
+        if not os.path.exists('results'):
+            os.makedirs('results')
+
         # CSV로 저장
         df = pd.DataFrame(all_results)
         timestamp = time.strftime("%Y%m%d_%H%M%S")
-        filename = f'naver_shopping_results_{timestamp}.csv'
+        filename = f'results/naver_shopping_results_{timestamp}.csv'  # 경로 수정
         df.to_csv(filename, index=False, encoding='utf-8-sig')
         print(f"\nCSV 파일로 저장되었습니다: {filename}")
     
