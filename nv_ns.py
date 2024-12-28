@@ -209,6 +209,7 @@ if __name__ == "__main__":
         config['sheet_url'] = getKey.get_apikey('GS_URL', 'config.json')
         config['sheet_name'] = getKey.get_apikey('GSHEET_KEYWORDS', 'config.json')
         config['rank_updates'] = getKey.get_apikey('GSHEET_RANK_PRE', 'config.json')
+        config['limit_page'] = getKey.get_apikey('LIMIT_PAGE', 'config.json')
 
     except Exception as e:
         print(f"설정을 불러오는 중 오류가 발생했습니다: {e}")
@@ -256,7 +257,7 @@ if __name__ == "__main__":
             rank_updates = []  # 데이터 초기화
         
         current_mid = item['mid']  # 현재 mid 업데이트
-        results = get_naver_shopping_results(item['keyword'], item['mid'], max_pages=10)
+        results = get_naver_shopping_results(item['keyword'], item['mid'], max_pages=config['limit_page'])
         
         if results and results['data']:
             products = parse_shopping_results(results, keyword=item['keyword'])
