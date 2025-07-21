@@ -3,10 +3,8 @@
 *.xlsx
 *.csv
 
-# screts files
-python-*.json
-secret.json
-config.json
+# scret files
+*.json
 
 /project-venv
 /results
