@@ -4,12 +4,11 @@
 *.csv
 
 # screts files
-python-*.json
-secret.json
-config.json
+*.json
 
 /results
 /project-venv
+/venv-ns
 
 # Created by https://www.toptal.com/developers/gitignore/api/macos
 # Edit at https://www.toptal.com/developers/gitignore?templates=macos

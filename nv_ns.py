@@ -244,7 +244,6 @@ if __name__ == "__main__":
     current_mid = None  # 현재 처리 중인 mid 추적용
     
     for idx, item in enumerate(tracking_items, 1):
-        print(f"\n[{idx}/{len(tracking_items)}] 검색어: {item['keyword']}, MID: {item['mid']} 검색 중...")
         
         # mid가 변경되었을 때 이전 데이터 저장
         if current_mid is not None and current_mid != item['mid'] and rank_updates:
@@ -256,6 +255,8 @@ if __name__ == "__main__":
             )
             rank_updates = []  # 데이터 초기화
         
+        print(f"\n[{idx}/{len(tracking_items)}] 검색어: {item['keyword']}, MID: {item['mid']} 검색 중...", flush=True)
+
         current_mid = item['mid']  # 현재 mid 업데이트
         results = get_naver_shopping_results(item['keyword'], item['mid'], max_pages=config['limit_page'])
         
