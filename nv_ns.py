@@ -8,7 +8,7 @@ from google.oauth2.service_account import Credentials
 import json
 import pandas as pd
 import callGetKey as getKey
-import os  # os 모듈 추가
+import os
 
 def get_naver_shopping_results(query: str, mid: int, max_pages: int = 1, cursor: int = 1, page_size: int = 50) -> dict:
     base_url = 'https://search.shopping.naver.com/ns/v1/search/paged-composite-cards'
@@ -177,7 +177,7 @@ def update_rank_sheet_batch(sheet_url: str, rank_data: List[Dict], sheet_client:
         worksheet = workbook.add_worksheet(sheet_name, 1000, 5)
         # 헤더 추가
         # worksheet.update('A1:E1', [['Timestamp', 'MID', 'Keyword', 'Rank', 'Date']])
-        worksheet.update('A1:I1', [['Date', 'Time', 'MID', 'Keyword', 'Store', 'Item', 'Rank', 'Channel', 'Title']])
+        worksheet.update('A1:K1', [['Date', 'Time', 'MID', 'Keyword', 'Store', 'Item', 'Rank', 'Channel', 'Name_Prd', 'Amt_Search', 'Amt_Prds']])
     
     # 현재 시간과 날짜
     date = time.strftime("%y. %m. %d")
@@ -209,6 +209,7 @@ if __name__ == "__main__":
         config['sheet_url'] = getKey.get_apikey('GS_URL', 'config.json')
         config['sheet_name'] = getKey.get_apikey('GSHEET_KEYWORDS', 'config.json')
         config['rank_updates'] = getKey.get_apikey('GSHEET_RANK_PRE', 'config.json')
+        config['limit_page'] = getKey.get_apikey('LIMIT_PAGE', 'config.json')
 
     except Exception as e:
         print(f"설정을 불러오는 중 오류가 발생했습니다: {e}")
@@ -235,13 +236,29 @@ if __name__ == "__main__":
         sheet_name=config['sheet_name'],
         sheet_client=SHEET_CLIENT
     )
+
+    tracking_items = sorted(tracking_items, key=lambda x: x['mid'])  # mid 기준 오름차순 정렬
     
     all_results = []
     rank_updates = []  # 순위 업데이트를 위한 데이터 저장
+    current_mid = None  # 현재 처리 중인 mid 추적용
     
     for idx, item in enumerate(tracking_items, 1):
-        print(f"\n[{idx}/{len(tracking_items)}] 검색어: {item['keyword']}, MID: {item['mid']} 검색 중...")
-        results = get_naver_shopping_results(item['keyword'], item['mid'], max_pages=10)
+        
+        # mid가 변경되었을 때 이전 데이터 저장
+        if current_mid is not None and current_mid != item['mid'] and rank_updates:
+            update_rank_sheet_batch(
+                sheet_url=config['sheet_url'],
+                rank_data=rank_updates,
+                sheet_client=SHEET_CLIENT,
+                sheet_name=str(current_mid)  # mid를 시트 이름으로 사용
+            )
+            rank_updates = []  # 데이터 초기화
+        
+        print(f"\n[{idx}/{len(tracking_items)}] 검색어: {item['keyword']}, MID: {item['mid']} 검색 중...", flush=True)
+
+        current_mid = item['mid']  # 현재 mid 업데이트
+        results = get_naver_shopping_results(item['keyword'], item['mid'], max_pages=config['limit_page'])
         
         if results and results['data']:
             products = parse_shopping_results(results, keyword=item['keyword'])
@@ -261,13 +278,13 @@ if __name__ == "__main__":
                     })
                     break
     
-    # 모든 순위 데이터를 한 번에 업데이트
+    # 마지막 mid의 데이터 저장
     if rank_updates:
         update_rank_sheet_batch(
             sheet_url=config['sheet_url'],
             rank_data=rank_updates,
             sheet_client=SHEET_CLIENT,
-            sheet_name=config['rank_updates']
+            sheet_name=str(current_mid)
         )
     
     if all_results:

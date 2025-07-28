@@ -3,11 +3,12 @@
 *.xlsx
 *.csv
 
-# scret files
+# screts files
 *.json
 
-/project-venv
 /results
+/project-venv
+/venv-ns
 
 # Created by https://www.toptal.com/developers/gitignore/api/macos
 # Edit at https://www.toptal.com/developers/gitignore?templates=macos
